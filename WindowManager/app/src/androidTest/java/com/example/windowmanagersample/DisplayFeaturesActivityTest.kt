@@ -22,18 +22,17 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withSubstring
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.window.FoldingFeature.Orientation.Companion.HORIZONTAL
-import androidx.window.FoldingFeature.Orientation.Companion.VERTICAL
-import androidx.window.FoldingFeature.State.Companion.FLAT
-import androidx.window.FoldingFeature.State.Companion.HALF_OPENED
-import androidx.window.WindowLayoutInfo
-import androidx.window.testing.FoldingFeature
-import androidx.window.testing.WindowLayoutInfoPublisherRule
-import androidx.window.windowInfoRepository
+import androidx.window.layout.FoldingFeature.Orientation.Companion.HORIZONTAL
+import androidx.window.layout.FoldingFeature.Orientation.Companion.VERTICAL
+import androidx.window.layout.FoldingFeature.State.Companion.FLAT
+import androidx.window.layout.FoldingFeature.State.Companion.HALF_OPENED
+import androidx.window.layout.WindowInfoRepository.Companion.windowInfoRepository
+import androidx.window.layout.WindowLayoutInfo
+import androidx.window.testing.layout.FoldingFeature
+import androidx.window.testing.layout.WindowLayoutInfoPublisherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.take
-import kotlinx.coroutines.flow.toCollection
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
@@ -68,20 +67,17 @@ class DisplayFeaturesActivityTest {
             )
             val expected = WindowLayoutInfo.Builder().setDisplayFeatures(listOf(feature)).build()
 
-            val values = mutableListOf<WindowLayoutInfo>()
             val value = testScope.async {
-                activity.windowInfoRepository().windowLayoutInfo.take(1).toCollection(values)
+                activity.windowInfoRepository().windowLayoutInfo.first()
             }
             publisherRule.overrideWindowLayoutInfo(expected)
             runBlockingTest {
-                val newValues = value.await().toList()
                 assertEquals(
-                    listOf(expected),
-                    newValues
+                    expected,
+                    value.await()
                 )
             }
         }
-        onView(withId(R.id.state_update_log)).check(matches(withSubstring("state=FLAT")))
         onView(withId(R.id.current_state)).check(matches(withSubstring("is not separated")))
         onView(withId(R.id.current_state)).check(matches(withSubstring("Hinge is horizontal")))
     }
@@ -93,20 +89,17 @@ class DisplayFeaturesActivityTest {
                 FoldingFeature(activity = activity, state = HALF_OPENED, orientation = HORIZONTAL)
             val expected = WindowLayoutInfo.Builder().setDisplayFeatures(listOf(feature)).build()
 
-            val values = mutableListOf<WindowLayoutInfo>()
             val value = testScope.async {
-                activity.windowInfoRepository().windowLayoutInfo.take(1).toCollection(values)
+                activity.windowInfoRepository().windowLayoutInfo.first()
             }
             publisherRule.overrideWindowLayoutInfo(expected)
             runBlockingTest {
-                val newValues = value.await().toList()
                 assertEquals(
-                    listOf(expected),
-                    newValues
+                    expected,
+                    value.await()
                 )
             }
         }
-        onView(withId(R.id.state_update_log)).check(matches(withSubstring("state=HALF_OPENED")))
         onView(withId(R.id.current_state)).check(matches(withSubstring("are separated")))
         onView(withId(R.id.current_state)).check(matches(withSubstring("Hinge is horizontal")))
     }
@@ -118,20 +111,17 @@ class DisplayFeaturesActivityTest {
                 FoldingFeature(activity = activity, state = HALF_OPENED, orientation = VERTICAL)
             val expected = WindowLayoutInfo.Builder().setDisplayFeatures(listOf(feature)).build()
 
-            val values = mutableListOf<WindowLayoutInfo>()
             val value = testScope.async {
-                activity.windowInfoRepository().windowLayoutInfo.take(1).toCollection(values)
+                activity.windowInfoRepository().windowLayoutInfo.first()
             }
             publisherRule.overrideWindowLayoutInfo(expected)
             runBlockingTest {
-                val newValues = value.await().toList()
                 assertEquals(
-                    listOf(expected),
-                    newValues
+                    expected,
+                    value.await()
                 )
             }
         }
-        onView(withId(R.id.state_update_log)).check(matches(withSubstring("state=HALF_OPENED")))
         onView(withId(R.id.current_state)).check(matches(withSubstring("are separated")))
         onView(withId(R.id.current_state)).check(matches(withSubstring("Hinge is vertical")))
     }
